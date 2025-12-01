@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026横山文旅 - 朗读声音排名</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Microsoft YaHei', 'Arial', sans-serif;
+        }
+        body {
+            background: url('https://picsum.photos/id/1036/1920/1080') center/cover no-repeat;
+            background-blend-mode: overlay;
+            background-color: rgba(22, 44, 77, 0.85);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+        .header {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            backdrop-filter: blur(8px);
+        }
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 15px;
+            color: #ffd166;
+            text-shadow: 0 3px 6px rgba(0,0,0,0.4);
+        }
+        .read-text {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 12px 30px;
+            border-radius: 30px;
+            display: inline-block;
+            margin-bottom: 10px;
+            border: 2px solid #ffd166;
+        }
+        .subtitle {
+            font-size: 1rem;
+            opacity: 0.9;
+            line-height: 1.5;
+        }
+        .user-input {
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        #userName {
+            padding: 12px 20px;
+            border-radius: 30px;
+            border: none;
+            font-size: 1rem;
+            width: 250px;
+            max-width: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+        }
+        .control-btn {
+            background: linear-gradient(90deg, #ff7e5f, #feb47b);
+            border: none;
+            color: white;
+            padding: 12px 35px;
+            font-size: 1.1rem;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255,126,95,0.3);
+            font-weight: bold;
+        }
+        .control-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(255,126,95,0.5);
+        }
+        .ranking-container {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+        .ranking-header {
+            display: flex;
+            justify-content: space-between;
+            padding: 0 20px 15px;
+            border-bottom: 2px solid rgba(255, 209, 102, 0.5);
+            margin-bottom: 20px;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        .rank-item {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            padding: 15px 20px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+        }
+        .rank-item:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateX(5px);
+        }
+        .rank-item.top3 {
+            border-left-color: #ffd700;
+            background: rgba(255, 215, 0, 0.1);
+        }
+        .rank-item.top3:nth-child(2) {
+            border-left-color: #c0c0c0;
+            background: rgba(192, 192, 192, 0.1);
+        }
+        .rank-item.top3:nth-child(3) {
+            border-left-color: #cd7f32;
+            background: rgba(205, 127, 50, 0.1);
+        }
+        .rank-number {
+            font-size: 1.8rem;
+            font-weight: bold;
+            width: 50px;
+            text-align: center;
+        }
+        .rank-name {
+            font-size: 1.2rem;
+            width: 120px;
+            text-align: left;
+            font-weight: 500;
+        }
+        .rank-metric {
+            width: 150px;
+            text-align: center;
+        }
+        .metric-label {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            margin-bottom: 3px;
+        }
+        .metric-value {
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+        .accuracy-bar {
+            width: 180px;
+            height: 10px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        .accuracy-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4361ee, #3a0ca3);
+            border-radius: 5px;
+            transition: width 0.3s ease;
+        }
+        .status-bar {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.5);
+            padding: 12px 25px;
+            border-radius: 30px;
+            font-size: 0.95rem;
+            backdrop-filter: blur(5px);
+            z-index: 10;
+        }
+        .empty-rank {
+            padding: 50px 0;
+            font-size: 1.1rem;
+            opacity: 0.8;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+            .read-text {
+                font-size: 1.2rem;
+                padding: 10px 20px;
+            }
+            .rank-item {
+                padding: 12px 15px;
+            }
+            .rank-number {
+                font-size: 1.5rem;
+                width: 40px;
+            }
+            .rank-name {
+                font-size: 1rem;
+                width: 100px;
+            }
+            .rank-metric {
+                width: 100px;
+            }
+            .accuracy-bar {
+                width: 120px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>2026 横山文旅 朗读声音排行榜</h1>
+            <div class="read-text">请朗读：2026，横山文旅更辉煌</div>
+            <p class="subtitle">输入您的名字，点击开始按钮授权麦克风，朗读上方文字<br>系统将实时检测声音高低（分贝）和朗读准确度，展示前6名</p >
+        </div>
+
+        <div class="user-input">
+            <input type="text" id="userName" placeholder="请输入您的名字（必填）" required>
+            <button class="control-btn" id="startBtn">开始朗读检测</button>
+        </div>
+
+        <div class="ranking-container">
+            <div class="ranking-header">
+                <div style="width: 50px;">排名</div>
+                <div style="width: 120px;">用户姓名</div>
+                <div style="width: 150px;">声音高低（dB）</div>
+                <div style="width: 150px;">朗读准确度</div>
+                <div style="width: 180px;">准确度进度</div>
+            </div>
+            <div id="rankingList" class="ranking-list">
+                <div class="empty-rank">
+                    等待用户参与朗读...<br>输入名字并点击开始按钮即可加入排名
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="status-bar" id="statusBar">状态：未开始检测 | 请输入名字并获取麦克风权限</div>
+
+    <script>
+        // 全局变量
+        let audioContext, analyser, microphone, isActive = false;
+        let rankData = []; // 排名数据：{name, volume, accuracy, timestamp}
+        const maxRankCount = 6; // 显示前6名
+        const updateInterval = 300; // 更新间隔（毫秒）
+        const targetText = "2026，横山文旅更辉煌"; // 目标朗读文本
+
+        // DOM 元素
+        const startBtn = document.getElementById('startBtn');
+        const userName = document.getElementById('userName');
+        const rankingList = document.getElementById('rankingList');
+        const statusBar = document.getElementById('statusBar');
+
+        // 按钮点击事件
+        startBtn.addEventListener('click', async () => {
+            const name = userName.value.trim();
+            if (!name) {
+                alert('请输入您的名字后再开始！');
+                return;
+            }
+
+            if (isActive) {
+                stopDetection();
+            } else {
+                await startDetection(name);
+            }
+        });
+
+        // 开始检测（声音+准确度）
+        async function startDetection(userName) {
+            try {
+                // 获取麦克风权限
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                
+                // 初始化音频上下文
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                analyser = audioContext.createAnalyser();
+                microphone = audioContext.createMediaStreamSource(stream);
+
+                // 配置分析器
+                analyser.fftSize = 512;
+                const bufferLength = analyser.frequencyBinCount;
+                const dataArray = new Uint8Array(bufferLength);
+
+                // 连接音频节点
+                microphone.connect(analyser);
+
+                isActive = true;
+                startBtn.textContent = '停止朗读检测';
+                statusBar.textContent = `状态：${userName}正在朗读 | 实时检测声音和准确度`;
+                rankingList.innerHTML = '<div class="empty-rank">正在检测您的朗读...请清晰朗读目标文本</div>';
+
+                // 模拟准确度检测（实际项目可对接语音识别API，此处为基于音量稳定性的模拟）
+                let accuracyInterval = setInterval(() => {
+                    analyser.getByteFrequencyData(dataArray);
+                    
+                    // 计算声音高低（分贝）
+                    const averageVolume = dataArray.reduce((sum, val) => sum + val, 0) / bufferLength;
+                    const volumeDb = Math.max(-70, 20 * Math.log10(averageVolume / 128)); // 转换为dB
+
+                    // 模拟准确度（基于音量稳定性+随机因子，实际需对接ASR接口）
+                    const stability = 1 - (Math.max(...dataArray) - Math.min(...dataArray)) / 255;
+                    const accuracy = Math.floor((stability * 0.7 + Math.random() * 0.3) * 100); // 0-100%
+
+                    // 更新当前用户数据
+                    updateUserRank(userName, volumeDb, accuracy);
+                }, updateInterval);
+
+                // 停止检测时清除定时器
+                startBtn.onclick = () => {
+                    clearInterval(accuracyInterval);
+                    stopDetection();
+                };
+
+            } catch (error) {
+                console.error('检测初始化失败：', error);
+                statusBar.textContent = '错误：无法获取麦克风权限 | 请检查浏览器设置';
+                alert('获取麦克风权限失败，请允许浏览器使用麦克风后重试');
+            }
+        }
+
+        // 停止检测
+        function stopDetection() {
+            if (microphone) microphone.disconnect();
+            if (audioContext) audioContext.close();
+            if (microphone?.stream) microphone.stream.getTracks().forEach(track => track.stop());
+
+            isActive = false;
+            startBtn.textContent = '开始朗读检测';
+            statusBar.textContent = '状态：已停止检测 | 输入名字可重新开始';
+            renderRanking();
+        }
+
+        // 更新用户排名数据
+        function updateUserRank(name, volume, accuracy) {
+            // 检查用户是否已在排名中
+            const userIndex = rankData.findIndex(item => item.name === name);
+            const userData = {
+                name,
+                volume: parseFloat(volume.toFixed(1)),
+                accuracy,
+                timestamp: Date.now()
+            };
+
+            if (userIndex > -1) {
+                // 更新现有用户数据
+                rankData[userIndex] = userData;
+            } else {
+                // 添加新用户
+                rankData.push(userData);
+            }
+
+            // 排序：先按准确度降序，再按声音高低降序
+            rankData.sort((a, b) => {
+                if (b.accuracy !== a.accuracy) {
+                    return b.accuracy - a.accuracy;
+                }
+                return b.volume - a.volume;
+            });
+
+            // 保留前6名
+            rankData = rankData.slice(0, maxRankCount);
+
+            // 渲染排名
+            renderRanking();
+        }
+
+        // 渲染排名列表
+        function renderRanking() {
+            if (rankData.length === 0) {
+                rankingList.innerHTML = '<div class="empty-rank">暂无排名数据 | 输入名字并点击开始按钮参与</div>';
+                return;
+            }
+
+            rankingList.innerHTML = rankData.map((item, index) => `
+                <div class="rank-item ${index < 3 ? 'top3' : ''}">
+                    <div class="rank-number">${index + 1}</div>
+                    <div class="rank-name">${item.name}</div>
+                    <div class="rank-metric">
+                        <div class="metric-label">声音高低</div>
+                        <div class="metric-value">${item.volume} dB</div>
+                    </div>
+                    <div class="rank-metric">
+                        <div class="metric-label">准确度</div>
+                        <div class="metric-value">${item.accuracy}%</div>
+                    </div>
+                    <div class="accuracy-bar">
+                        <div class="accuracy-fill" style="width: ${item.accuracy}%"></div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 监听输入框回车事件
+        userName.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') startBtn.click();
+        });
+    </script>
+</body>
+</html>
